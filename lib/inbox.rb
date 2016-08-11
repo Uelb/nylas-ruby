@@ -89,6 +89,8 @@ module Inbox
     attr_reader :app_id
     attr_reader :app_secret
 
+    # App secret should be the API KEY of the server
+    # Access Token is the current user email account id 
     def initialize(app_id, app_secret, access_token = nil, api_server = 'https://api.nylas.com',
                    service_domain = 'api.nylas.com')
       raise "When overriding the Inbox API server address, you must include https://" unless api_server.include?('://')
@@ -103,6 +105,7 @@ module Inbox
         ::RestClient.add_before_execution_proc do |req, params|
           req.add_field('X-Inbox-API-Wrapper', 'ruby')
           req['User-Agent'] = "Nylas Ruby SDK #{@version} - #{RUBY_VERSION}"
+          req.add_field['X-API-KEY'] = @app_secret
         end
       end
     end
