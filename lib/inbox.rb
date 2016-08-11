@@ -105,7 +105,7 @@ module Inbox
         ::RestClient.add_before_execution_proc do |req, params|
           req.add_field('X-Inbox-API-Wrapper', 'ruby')
           req['User-Agent'] = "Nylas Ruby SDK #{@version} - #{RUBY_VERSION}"
-          req.add_field('X-API-KEY'], @app_secret)
+          req.add_field('X-API-KEY', @app_secret)
         end
       end
     end
