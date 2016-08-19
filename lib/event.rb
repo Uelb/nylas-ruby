@@ -34,7 +34,7 @@ module Inbox
       url = @_api.url_for_path("/send-rsvp")
       data = {:event_id => @id, :status => status, :comment => comment}
 
-      ::RestClient.post(url, data.to_json, :content_type => :json) do |response, request, result|
+      @_api.execute_request(method: :post, url: url, payload: data, headers: {:content_type => :json}) do |response, request, result|
         json = Inbox.interpret_response(result, response, :expected_class => Object)
         self.inflate(json)
       end

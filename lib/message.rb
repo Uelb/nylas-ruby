@@ -82,7 +82,7 @@ module Inbox
     def raw
       model = nil
       collection = RestfulModelCollection.new(Message, @_api, {:message_id=>@id})
-      RestClient.get("#{collection.url}/#{id}/", :accept => 'message/rfc822'){ |response,request,result|
+      @_api.execute_request(method: :get, url: "#{collection.url}/#{id}/", headers: {:accept => 'message/rfc822'}){ |response,request,result|
         Inbox.interpret_http_status(result)
         response
       }
@@ -91,7 +91,7 @@ module Inbox
     def expanded
       expanded_url = url(action='?view=expanded')
 
-      RestClient.get(expanded_url){ |response,request,result|
+      @_api.execute_request(method: :get, url: expanded_url){ |response,request,result|
         json = Inbox.interpret_response(result, response, :expected_class => Object)
         expanded_message = Inbox::ExpandedMessage.new(@_api)
         expanded_message.inflate(json)

@@ -100,14 +100,13 @@ module Inbox
       @app_id = app_id
       @service_domain = service_domain
       @version = Inbox::VERSION
+    end
 
-      if ::RestClient.before_execution_procs.empty?
-        ::RestClient.add_before_execution_proc do |req, params|
-          req.add_field('X-Inbox-API-Wrapper', 'ruby')
-          req['User-Agent'] = "Nylas Ruby SDK #{@version} - #{RUBY_VERSION}"
-          req.add_field('X-API-KEY', @app_secret)
-        end
-      end
+    def execute_request arg, &block
+      arg[:headers] ||= {}
+      arg[:headers]['X-API-KEY'] = @app_secret if @app_secret
+      arg[:headers]['User-Agent'] = "Nylas Ruby SDK #{@version} - #{RUBY_VERSION}"
+      ::RestClient::Request.execute arg, &block
     end
 
     def url_for_path(path)
@@ -150,7 +149,7 @@ module Inbox
           'code' => code
       }
 
-      ::RestClient.post("https://#{@service_domain}/oauth/token", data) do |response, request, result|
+      execute_request(method: :post, url: "https://#{@service_domain}/oauth/token", payload: data) do |response, request, result|
         json = Inbox.interpret_response(result, response, :expected_class => Object)
         return json['access_token']
       end
@@ -196,7 +195,7 @@ module Inbox
     def account
       path = self.url_for_path("/account")
 
-      RestClient.get(path, {}) do |response,request,result|
+      execute_request(method: :get, url: path, payload: {}) do |response,request,result|
         json = Inbox.interpret_response(result, response, {:expected_class => Object})
         model = APIAccount.new(self)
         model.inflate(json)
@@ -222,7 +221,7 @@ module Inbox
 
       cursor = nil
 
-      RestClient.post(path, :content_type => :json) do |response,request,result|
+      @_api.execute_request(method: :post, url: path, headers: {:content_type => :json}) do |response,request,result|
         json = Inbox.interpret_response(result, response, {:expected_class => Object})
         cursor = json["cursor"]
       end
@@ -282,7 +281,7 @@ module Inbox
 
         json = nil
 
-        RestClient.get(path) do |response,request,result|
+        @_api.execute_request(method: :get, url: path) do |response,request,result|
           json = Inbox.interpret_response(result, response, {:expected_class => Object})
         end
 

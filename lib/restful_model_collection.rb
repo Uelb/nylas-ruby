@@ -29,7 +29,7 @@ module Inbox
     end
 
     def count
-      RestClient.get(url, params: @filters.merge(view: 'count')) { |response,request,result|
+      @_api.execute_request(method: :get, url: url, headers: {params: @filters.merge(view: 'count')}) { |response,request,result|
         json = Inbox.interpret_response(result, response)
         return json['count']
       }
@@ -82,7 +82,7 @@ module Inbox
 
     def delete(item_or_id)
       item_or_id = item_or_id.id if item_or_id.is_a?(RestfulModel)
-      RestClient.delete("#{url}/#{id}")
+      @_api.execute_request(method: :delete, url: "#{url}/#{id}")
     end
 
     def find(id)
@@ -124,7 +124,7 @@ module Inbox
     def get_model(id)
       model = nil
 
-      RestClient.get("#{url}/#{id}"){ |response,request,result|
+      @_api.execute_request(method: :get, url: "#{url}/#{id}"){ |response,request,result|
         json = Inbox.interpret_response(result, response, {:expected_class => Object})
         if @model_class < RestfulModel
           model = @model_class.new(@_api)
@@ -142,7 +142,7 @@ module Inbox
       filters[:limit] = limit
       models = []
 
-      RestClient.get(url, :params => filters){ |response,request,result|
+      @_api.execute_request(method: :get, url: url, headers: {:params => filters}){ |response,request,result|
         items = Inbox.interpret_response(result, response, {:expected_class => Array})
         models = inflate_collection(items)
       }

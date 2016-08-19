@@ -63,7 +63,8 @@ module Inbox
     def update(http_method, action, data = {}, params = {})
       http_method = http_method.downcase
 
-      ::RestClient.send(http_method, self.url(action), data.to_json, :content_type => :json, :params => params) do |response, request, result|
+      url = self.url(action)
+      @_api.execute_request(method: http_method, url: url, payload: data, headers: {:content_type => :json, :params => params}) do |response, request, result|
         unless http_method == 'delete'
           json = Inbox.interpret_response(result, response, :expected_class => Object)
           inflate(json)
@@ -73,7 +74,7 @@ module Inbox
     end
 
     def destroy(params = {})
-      ::RestClient.send('delete', self.url, :params => params) do |response, request|
+      @_api.execute_request(method: 'delete', url: self.url, headers: {:params => params}) do |response, request|
         Inbox.interpret_http_status(response)
       end
     end

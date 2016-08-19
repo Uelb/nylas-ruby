@@ -19,7 +19,7 @@ module Inbox
     end
 
     def save!
-      ::RestClient.post(url, {:file => @file}) do |response, request, result|
+      @_api.execute_request(method: :post, url: url, payload: {:file => @file}) do |response, request, result|
         json = Inbox.interpret_response(result, response, :expected_class => Object)
         json = json[0] if (json.class == Array)
         inflate(json)
@@ -29,7 +29,7 @@ module Inbox
 
     def download
       download_url = self.url('download')
-      ::RestClient.get(download_url) do |response, request, result|
+      @_api.execute_request(method: :get, url: download_url) do |response, request, result|
         Inbox.interpret_http_status(result)
         response
       end
