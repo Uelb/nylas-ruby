@@ -19,7 +19,7 @@ module Inbox
     end
 
     def save!
-      ::RestClient.post(url, {:file => @file}) do |response, request, result|
+      @_api.execute_request(url: url, payload: {:file => @file}) do |response, request, result|
         json = Inbox.interpret_response(result, response, :expected_class => Object)
         json = json[0] if (json.class == Array)
         inflate(json)

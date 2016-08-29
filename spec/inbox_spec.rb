@@ -8,18 +8,21 @@ describe 'Inbox' do
     @access_token = 'UXXMOCJW-BKSLPCFI-UQAQFWLO'
   end
 
-  describe "initialize" do
-    it "should add the 'before_execution_proc' to the RestClient to set the header" do
-      if ::RestClient.before_execution_procs.empty?
-        @inbox = Inbox::API.new(@app_id, @app_secret)
-        expect(::RestClient.before_execution_procs.empty?).to eq(false)
-      end
+  describe "#execute_request" do
+    before(:each) do
+      @inbox = Inbox::API.new(@app_id, @app_secret, @access_token)
+      stub_request(:post, "https://api.nylas.com/messages").
+         with(:headers => {'User-Agent'=>'Nylas Ruby SDK 2.0.1 - 2.3.1', 'X-Inbox-Api-Wrapper'=>'ruby'}).
+          to_return(
+          :status => 200,
+          :body => "foo",
+          :headers => {"Content-Type" => "application/json"})
     end
+    
+    subject {@inbox.execute_request method: :post, url: "https://api.nylas.com/messages"}
 
-    it "should not do this multiple times if multiple copies of the Inbox::API are initialized" do
-      @inbox = Inbox::API.new(@app_id, @app_secret)
-      @inbox = Inbox::API.new(@app_id, @app_secret)
-      expect(::RestClient.before_execution_procs.count).to eq(1)
+    it "should execute a request with the correct headers" do
+      expect(subject.body).to eq("foo")
     end
   end
 

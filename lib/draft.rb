@@ -31,7 +31,7 @@ module Inbox
         data = as_json()
       end
 
-      ::RestClient.post(url, data.to_json, :content_type => :json) do |response, request, result|
+      @_api.execute_request(method: :post, url: url, payload: data.to_json, headers: {content_type: :json}) do |response, request, result|
 
         # This is mostly lifted from Inbox#interpret_response. We're not using the original function
         # because we need to pass an additional error message to the Exception constructor.

@@ -13,7 +13,7 @@ module Inbox
       raise UnexpectedAccountAction.new unless action == "upgrade" || action == "downgrade"
 
       collection = ManagementModelCollection.new(Account, @_api, {:account_id=>@account_id})
-      ::RestClient.post("#{collection.url}/#{@account_id}/#{action}",{}) do |response, request, result|
+      @_api.execute_request(method: :post, url: "#{collection.url}/#{@account_id}/#{action}", payload: {}) do |response, request, result|
           # Throw any exceptions
         json = Inbox.interpret_response(result, response, :expected_class => Object)
       end
